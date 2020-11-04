@@ -58,8 +58,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     bool endWithPng = url.toLowerCase().endsWith('.png');
     bool endWithJpg = url.toLowerCase().endsWith('.jpg');
     bool endWithJpeg = url.toLowerCase().endsWith('.jpeg');
+    bool endWithWebp = url.toLowerCase().endsWith('.webp');
     return (startWithHttp || startWithHttps) &&
-        (endWithJpeg || endWithJpg || endWithJpeg);
+        (endWithPng || endWithJpg || endWithJpeg || endWithWebp);
   }
 
   @override
@@ -71,7 +72,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     _imageURLFocusNode.dispose();
   }
 
-  void _saveForm() {
+  Future<void> _saveForm() async {
     var isValid = _form.currentState.validate();
 
     if (!isValid) {
@@ -93,19 +94,31 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     });
 
     final products = Provider.of<Products>(context, listen: false);
-    if (_formData['id'] == null) {
-      products.addProduct(product).then((_) {
-        setState(() {
-          _isLoading = false;
-        });
-        Navigator.of(context).pop();
-      });
-    } else {
-      products.updateProduct(product);
+    try {
+      if (_formData['id'] == null) {
+        await products.addProduct(product);
+      } else {
+        await products.updateProduct(product);
+      }
+      Navigator.of(context).pop();
+    } catch (error) {
+      await showDialog<Null>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text('Ocorreu um erro!'),
+          content: Text('Ocorreu um erro inesperado!!'),
+          actions: [
+            FlatButton(
+              child: Text('Ok'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      );
+    } finally {
       setState(() {
         _isLoading = false;
       });
-      Navigator.of(context).pop();
     }
   }
 

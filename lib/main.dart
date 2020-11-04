@@ -8,10 +8,13 @@ import 'views/cart_screen.dart';
 import 'views/orders_screen.dart';
 import 'views/products_screen.dart';
 import 'views/products_form_screen.dart';
+import 'views/auth_screen.dart';
+import 'views/auth_home_screen.dart';
 
 import 'providers/products.dart';
 import 'providers/cart.dart';
 import 'providers/orders.dart';
+import 'providers/auth.dart';
 
 void main() => runApp(MyApp());
 
@@ -21,13 +24,26 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => new Products(),
+          create: (_) => new Auth(),
+        ),
+        ChangeNotifierProxyProvider<Auth, Products>(
+          create: (_) => Products(),
+          update: (ctx, auth, previousProducts) => new Products(
+            auth.token,
+            auth.userId,
+            previousProducts.items,
+          ),
         ),
         ChangeNotifierProvider(
           create: (_) => new Cart(),
         ),
-        ChangeNotifierProvider(
-          create: (_) => new Orders(),
+        ChangeNotifierProxyProvider<Auth, Orders>(
+          create: (_) => Orders(),
+          update: (ctx, auth, previousOrders) => new Orders(
+            auth.token,
+            auth.userId,
+            previousOrders.items,
+          ),
         ),
       ],
       child: MaterialApp(
@@ -37,8 +53,8 @@ class MyApp extends StatelessWidget {
           accentColor: Colors.deepOrange,
           fontFamily: 'Lato',
         ),
-        home: ProductsOverviewScreen(),
         routes: {
+          AppRoutes.AUTH_HOME: (ctx) => AuthOrHomeScreen(),
           AppRoutes.PRODUCT_DETAIL: (ctx) => ProductDetailScreen(),
           AppRoutes.CART: (ctx) => CartScreen(),
           AppRoutes.ORDERS: (ctx) => OrdersScreen(),
