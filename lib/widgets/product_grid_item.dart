@@ -22,9 +22,13 @@ class ProductGridItem extends StatelessWidget {
               arguments: product,
             );
           },
-          child: Image.network(
-            product.imageUrl,
-            fit: BoxFit.cover,
+          child: Hero(
+            tag: product.id,
+            child: FadeInImage(
+              placeholder: AssetImage('assets\images\product-placeholder.png'),
+              fit: BoxFit.cover,
+              image: NetworkImage(product.imageUrl),
+            ),
           ),
         ),
         footer: GridTileBar(
